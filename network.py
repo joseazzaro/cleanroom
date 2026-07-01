@@ -28,18 +28,25 @@ class Zone:
         self.rh = rh
 
         #
-        # Presión nodal
+        # Presión relativa al exterior [Pa]
         #
         self.pressure = pressure
 
+        #
+        # Nodo frontera
+        #
+        self.is_boundary = is_boundary
+
+        #
+        # Altura de referencia
+        #
         self.reference_height = (
             reference_height
         )
 
-        self.is_boundary = (
-            is_boundary
-        )
-
+        #
+        # Propiedades del aire
+        #
         self.rho = air_density(
             temperature,
             rh,
@@ -53,16 +60,11 @@ class Zone:
         )
 
         #
-        # HVAC
+        # Sistema HVAC
         #
+        self.supply_m3h = supply_m3h
 
-        self.supply_m3h = (
-            supply_m3h
-        )
-
-        self.exhaust_m3h = (
-            exhaust_m3h
-        )
+        self.exhaust_m3h = exhaust_m3h
 
         self.m_supply = (
             self.rho
@@ -77,16 +79,13 @@ class Zone:
         )
 
         #
-        # Se calcula una sola vez
-        # a partir del estado inicial
+        # Retorno fijo
         #
-
         self.return_mass_flow_fixed = 0.0
 
         #
-        # Variables de balance
+        # Variables auxiliares
         #
-
         self.m_in = 0.0
 
         self.m_out = 0.0
@@ -154,15 +153,13 @@ class Link:
         self.node2 = node2
 
         #
-        # Área base (puerta cerrada)
+        # Área cerrada
         #
-
         self.area = area
 
         #
         # Área usada por el solver
         #
-
         self.dynamic_area = area
 
         self.width = width
@@ -173,6 +170,9 @@ class Link:
 
         self.n = n
 
+        #
+        # Modelo dinámico asociado
+        #
         self.dynamic_model = None
 
     def is_door(self):

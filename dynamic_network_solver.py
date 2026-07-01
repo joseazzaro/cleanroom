@@ -9,22 +9,20 @@ from contam_solver import (
 class DynamicNetworkSolver:
 
     def __init__(
-
         self,
-
         network,
-
-        max_iterations=25,
-
-        tolerance=1e-5
-
+        max_iterations=50,
+        mass_tolerance=1e-4,
+        relaxation=0.75
     ):
 
         self.network = network
 
         self.max_iterations = max_iterations
 
-        self.tolerance = tolerance
+        self.mass_tolerance = mass_tolerance
+
+        self.relaxation = relaxation
 
     def unknown_zones(self):
 
@@ -42,9 +40,9 @@ class DynamicNetworkSolver:
 
         zones = self.unknown_zones()
 
-        n = len(zones)
-
-        R = np.zeros(n)
+        residual = np.zeros(
+            len(zones)
+        )
 
         index = {
 
@@ -54,17 +52,39 @@ class DynamicNetworkSolver:
 
         }
 
-        for i, z in enumerate(zones):
+        total_flow = np.zeros(
+            len(zones)
+        )
 
-            R[i] = (
+        #
+        # HVAC
+        #
 
-                z.m_supply
+        for i, zone in enumerate(zones):
 
-                - z.m_exhaust
+            residual[i] = (
 
-                - z.return_mass_flow_fixed
+                zone.m_supply
+
+                - zone.m_exhaust
+
+                - zone.return_mass_flow_fixed
 
             )
+
+            total_flow[i] = (
+
+                abs(zone.m_supply)
+
+                + abs(zone.m_exhaust)
+
+                + abs(zone.return_mass_flow_fixed)
+
+            )
+
+        #
+        # Links
+        #
 
         for link in self.network.links:
 
@@ -77,8 +97,11 @@ class DynamicNetworkSolver:
             )
 
             dp = (
+
                 z1.pressure
+
                 - z2.pressure
+
             )
 
             rho = (
@@ -109,17 +132,24 @@ class DynamicNetworkSolver:
 
             if not z1.is_boundary:
 
-                R[
-                    index[z1.id]
-                ] -= flow
+                i = index[z1.id]
+
+                residual[i] -= flow
+
+                total_flow[i] += abs(flow)
 
             if not z2.is_boundary:
 
-                R[
-                    index[z2.id]
-                ] += flow
+                i = index[z2.id]
 
-        return R
+                residual[i] += flow
+
+                total_flow[i] += abs(flow)
+
+        return (
+            residual,
+            total_flow
+        )
 
     def jacobian(self):
 
@@ -127,7 +157,9 @@ class DynamicNetworkSolver:
 
         n = len(zones)
 
-        J = np.zeros((n, n))
+        J = np.zeros(
+            (n, n)
+        )
 
         index = {
 
@@ -148,8 +180,11 @@ class DynamicNetworkSolver:
             )
 
             dp = (
+
                 z1.pressure
+
                 - z2.pressure
+
             )
 
             rho = (
@@ -179,9 +214,13 @@ class DynamicNetworkSolver:
             )
 
             if (
+
                 not z1.is_boundary
+
                 and
+
                 not z2.is_boundary
+
             ):
 
                 i = index[z1.id]
@@ -210,19 +249,67 @@ class DynamicNetworkSolver:
 
         return J
 
+    def converged(
+
+        self,
+
+        residual,
+
+        total_flow
+
+    ):
+
+        max_error = 0.0
+
+        for R, F in zip(
+            residual,
+            total_flow
+        ):
+
+            err = abs(R) / max(
+                F,
+                1e-10
+            )
+
+            max_error = max(
+                max_error,
+                err
+            )
+
+        return (
+            max_error
+            <
+            self.mass_tolerance
+        )
+
     def solve(self):
 
         zones = self.unknown_zones()
 
-        for _ in range(
+        for iteration in range(
             self.max_iterations
         ):
 
-            R = self.residual_vector()
+            residual, total_flow = (
+                self.residual_vector()
+            )
 
-            if np.max(
-                np.abs(R)
-            ) < self.tolerance:
+            max_residual = np.max(
+                np.abs(residual)
+            )
+
+            print(
+                f"Iter {iteration:02d} "
+                f"MaxResidual={max_residual:.6e}"
+            )
+
+            if self.converged(
+
+                residual,
+
+                total_flow
+
+            ):
 
                 return True
 
@@ -232,15 +319,25 @@ class DynamicNetworkSolver:
 
                 correction = np.linalg.solve(
                     J,
-                    R
+                    residual
                 )
 
-            except Exception:
+            except np.linalg.LinAlgError:
+
+                print(
+                    "Jacobiana singular"
+                )
 
                 return False
 
             for i, zone in enumerate(zones):
 
-                zone.pressure -= correction[i]
+                zone.pressure -= (
+
+                    self.relaxation
+
+                    * correction[i]
+
+                )
 
         return False
