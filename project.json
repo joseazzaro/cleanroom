@@ -1,0 +1,197 @@
+{
+  "simulation": {
+
+    "t_start": 0.0,
+    "t_end": 60.0,
+
+    "dt": 0.01,
+
+    "solver": {
+
+      "max_iterations": 50,
+
+      "pressure_tolerance_pa": 0.001,
+
+      "mass_tolerance_kgs": 1e-6,
+
+      "max_pressure_correction_pa": 50.0,
+
+      "steffensen_ratio": -0.5
+    }
+  },
+
+  "atmosphere": {
+
+    "pressure": 101325.0,
+
+    "temperature": 30.0,
+
+    "rh": 60.0
+  },
+
+  "zones": [
+
+    {
+      "id": "EXTERIOR",
+
+      "volume": 1.0e12,
+
+      "temperature": 30.0,
+      "rh": 60.0,
+
+      "pressure": 0.0,
+
+      "reference_height": 1.5,
+
+      "supply_m3h": 0.0,
+      "exhaust_m3h": 0.0,
+
+      "is_boundary": true
+    },
+
+    {
+      "id": "GRANULACION_II",
+
+      "volume": 300.0,
+
+      "temperature": 22.0,
+      "rh": 45.0,
+
+      "pressure": 30.0,
+
+      "reference_height": 1.5,
+
+      "supply_m3h": 5000.0,
+      "exhaust_m3h": 0.0,
+
+      "is_boundary": false
+    },
+
+    {
+      "id": "ESC_MAT",
+
+      "volume": 50.0,
+
+      "temperature": 20.0,
+      "rh": 45.0,
+
+      "pressure": 15.0,
+
+      "reference_height": 1.5,
+
+      "supply_m3h": 700.0,
+      "exhaust_m3h": 0.0,
+
+      "is_boundary": false
+    },
+
+    {
+      "id": "ESC_PER",
+
+      "volume": 40.0,
+
+      "temperature": 20.0,
+      "rh": 45.0,
+
+      "pressure": 10.0,
+
+      "reference_height": 1.5,
+
+      "supply_m3h": 500.0,
+      "exhaust_m3h": 0.0,
+
+      "is_boundary": false
+    }
+  ],
+
+  "links": [
+
+    {
+      "id": "L1",
+
+      "type": "swing_door",
+
+      "node1": "GRANULACION_II",
+      "node2": "ESC_MAT",
+
+      "width": 1.00,
+      "height": 2.10,
+
+      "closed_leakage_area": 0.015,
+
+      "cd": 0.65,
+      "n": 0.50
+    },
+
+    {
+      "id": "L2",
+
+      "type": "swing_door",
+
+      "node1": "GRANULACION_II",
+      "node2": "ESC_PER",
+
+      "width": 1.00,
+      "height": 2.10,
+
+      "closed_leakage_area": 0.015,
+
+      "cd": 0.65,
+      "n": 0.50
+    },
+
+    {
+      "id": "L3",
+
+      "type": "fixed_leakage",
+
+      "node1": "ESC_MAT",
+      "node2": "EXTERIOR",
+
+      "width": 0.90,
+      "height": 2.10,
+
+      "closed_leakage_area": 0.003,
+
+      "cd": 0.65,
+      "n": 0.50
+    },
+
+    {
+      "id": "L4",
+
+      "type": "fixed_leakage",
+
+      "node1": "ESC_PER",
+      "node2": "EXTERIOR",
+
+      "width": 0.90,
+      "height": 2.10,
+
+      "closed_leakage_area": 0.003,
+
+      "cd": 0.65,
+      "n": 0.50
+    }
+  ],
+
+  "events": [
+
+    {
+      "id": "E1",
+
+      "type": "door_cycle",
+
+      "link": "L1",
+
+      "start_time": 10.0,
+
+      "opening_speed_deg_s": 30.0,
+
+      "max_angle_deg": 90.0,
+
+      "hold_open_time_s": 5.0
+    }
+
+  ]
+}

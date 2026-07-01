@@ -1,0 +1,27 @@
+SIMULACION MULTIZONA HVAC
+================================================================================
+Fecha de ejecución: 2026-07-01 20:17:48.863202
+
+PROPIEDADES DEL AIRE
+--------------------------------------------------------------------------------
+EXTERIOR             T=30.0 °C  HR=60.0 %  rho=1.1533 kg/m3  nu=1.61751324e-05 m2/s
+GRANULACION_II       T=22.0 °C  HR=45.0 %  rho=1.1906 kg/m3  nu=1.53371771e-05 m2/s
+ESC_MAT              T=20.0 °C  HR=45.0 %  rho=1.1994 kg/m3  nu=1.51432296e-05 m2/s
+ESC_PER              T=20.0 °C  HR=45.0 %  rho=1.1994 kg/m3  nu=1.51432296e-05 m2/s
+
+TRANSFERENCIAS ENTRE NODOS
+--------------------------------------------------------------------------------
+L1      swing_door     GRANULACION_II -> ESC_MAT                   0.0584 kg/s      175.9 m3/h
+L2      swing_door     GRANULACION_II -> ESC_PER                   0.0674 kg/s      203.1 m3/h
+L3      fixed_leakage  ESC_MAT -> EXTERIOR                         0.0116 kg/s       35.5 m3/h
+L4      fixed_leakage  ESC_PER -> EXTERIOR                         0.0095 kg/s       28.9 m3/h
+
+BALANCE DE MASA POR ZONA
+--------------------------------------------------------------------------------
+Zona                       m_sup       m_ext        m_in       m_out       m_ret
+--------------------------------------------------------------------------------
+GRANULACION_II            1.6537      0.0000      0.0000      0.1258      1.5279
+ESC_MAT                   0.2332      0.0000      0.0584      0.0116      0.2800
+ESC_PER                   0.1666      0.0000      0.0674      0.0095      0.2245
+
+NOTA: El retorno indicado es el requerido para mantener la presión especificada en régimen estacionario.
